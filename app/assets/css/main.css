@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --font-display: "Baskervville", serif;
+}
+
+body {
+    @apply font-serif;
+}
+
+@layer base {
+  table {
+    @apply w-full border-collapse my-4;
+  }
+  th {
+    @apply border border-neutral-400 px-4 py-2 bg-neutral-200 text-left font-bold;
+  }
+  td {
+    @apply border border-neutral-400 px-4 py-2;
+  }
+  tr:nth-child(even) {
+    @apply bg-neutral-50;
+  }
+  h1 {
+    @apply flex gap-2 items-center text-3xl font-bold pb-2 border-b mb-4;
+  }
+  h2 {
+    @apply flex gap-2 items-center text-xl font-semibold mb-2;
+  }
+  h3 {
+    @apply flex gap-2 items-center text-lg;
+  }
+  p {
+    @apply leading-relaxed;
+  }
+  ul {
+    @apply list-disc list-inside mb-4;
+  }
+  button {
+    @apply flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-xl bg-neutral-200 enabled:hover:bg-neutral-300 border rounded-xl enabled:hover:shadow-[0_0_5px_black] cursor-pointer enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none;
+  }
+  input {
+    @apply flex justify-center whitespace-nowrap px-4 py-2 text-xl border rounded-xl hover:shadow-[0_0_5px_black] focus:shadow-[0_0_5px_black] outline-none transition-all;
+  }
+  textarea {
+    @apply flex justify-center whitespace-nowrap px-4 py-2 text-xl border rounded-xl hover:shadow-[0_0_5px_black] focus:shadow-[0_0_5px_black] outline-none transition-all;
+  }
+  a {
+    @apply text-black underline;
+  }
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.25s;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+.sidebar-enter-active,
+.sidebar-leave-active {
+  transition: opacity 0.3s;
+}
+
+.sidebar-enter-from,
+.sidebar-leave-to {
+  opacity: 0;
+}
+
+.sidebar-content {
+    left: 25%;
+}
+
+.sidebar-enter-active .sidebar-content,
+.sidebar-leave-active .sidebar-content {
+  transition: left 0.3s;
+}
+
+.sidebar-enter-from .sidebar-content,
+.sidebar-leave-to .sidebar-content {
+  left: 100%;
+}
