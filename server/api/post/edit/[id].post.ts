@@ -3,7 +3,7 @@ import { createSlug } from "~~/lib/utils";
 import { PostSchema } from "~~/lib/schemas";
 
 export default defineEventHandler(async (event) => {
-    // Vérification de la session
+    // Session verification
     const session = await getUserSession(event);
     if (!session.user) {
         throw createError({ status: 401, statusText: "Unauthorized" });

@@ -14,7 +14,7 @@ const posts: Record<string, string> = {
 async function main() {
     for (const [key, value] of Object.entries(folders)) {
         console.log(`Checking if folder "${key}" exists...`);
-        const folder = await prisma.folder.findUnique({
+        const folder = await prisma.folder.findFirst({
             where: {
                 slug: key
             }
@@ -31,7 +31,7 @@ async function main() {
     }
     for (const [key, value] of Object.entries(posts)) {
         console.log(`Checking if post "${key}" exists...`);
-        const post = await prisma.post.findUnique({
+        const post = await prisma.post.findFirst({
             where: {
                 slug: key
             }

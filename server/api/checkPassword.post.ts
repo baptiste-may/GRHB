@@ -1,6 +1,6 @@
 import { verifyPassword } from "~~/lib/auth";
 
-const PASSWORD_HASH = process.env.PASSWORD_HASH || "";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
@@ -13,14 +13,14 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    if (!PASSWORD_HASH || !verifyPassword(password, PASSWORD_HASH)) {
+    if (!ADMIN_PASSWORD || !verifyPassword(password, ADMIN_PASSWORD)) {
         throw createError({
             status: 401,
             statusText: "Invalid password",
         });
     }
 
-    // On crée la session sécurisée
+    // Create the secure session
     await setUserSession(event, {
         user: {
             role: 'admin'

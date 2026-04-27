@@ -19,12 +19,12 @@ const transporter = nodemailer.createTransport({
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
-    // 1. Validation Zod (inclut le Honeypot)
+    // 1. Zod Validation (includes Honeypot)
     const result = EmailSchema.safeParse(body);
     if (!result.success) {
         throw createError({
             status: 400,
-            statusText: "Données invalides",
+            statusText: "Invalid data",
             data: result.error.format()
         });
     }

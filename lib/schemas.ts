@@ -17,6 +17,6 @@ export const EmailSchema = z.object({
   email: z.string().email(),
   subject: z.string().min(2).max(200),
   content: z.string().min(10).max(5000),
-  honeypot: z.string().max(0), // Doit être vide
+  honeypot: z.string().max(0), // Must be empty
 });
 
