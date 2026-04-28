@@ -36,6 +36,7 @@ const renderedContent = computed(() => sanitizeHtml(marked.parse(props.post.cont
 <template>
     <div class="flex flex-col gap-4">
         <UiBreadcrumbs :slugs="breadcrumbs" />
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-html="renderedContent"/>
         <UiPostFooter :post="post" />
     </div>
