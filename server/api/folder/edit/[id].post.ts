@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!id) throw createError({ status: 400 });
 
     const body = await readBody(event);
-    // On n'attend que le nom pour l'edit simple d'après le code existant
+    // Only expecting the name for simple edit based on existing code
     const result = FolderSchema.pick({ name: true }).safeParse(body);
 
     if (!result.success) {

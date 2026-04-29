@@ -40,10 +40,12 @@ const renderedContent = computed(() => {
         </div>
         <div class="flex flex-col gap-2 p-6 grow">
             <h1 class="font-bold line-clamp-2 border-b">{{ post.title }}</h1>
+            <!-- eslint-disable vue/no-v-html -->
             <div
                 class="text-base font-light overflow-hidden text-ellipsis **:inline [&_img]:hidden [&_table]:hidden grow line-clamp-2"
                 v-html="renderedContent"
             />
+            <!-- eslint-enable vue/no-v-html -->
             <p class="text-sm font-bold italic">
                 {{ new Date(post.updatedAt).toLocaleDateString("fr") }}
             </p>

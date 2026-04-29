@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
 
 const prismaClientSingleton = () => {
   let url = process.env.DATABASE_URL;
@@ -10,16 +11,15 @@ const prismaClientSingleton = () => {
       url = config.databaseUrl;
     }
   } catch {
-    // On ignore l'erreur si on n'est pas dans un contexte Nuxt (ex: scripts)
+    // Ignore error if not in Nuxt context (e.g., scripts)
   }
 
   if (!url) {
     throw new Error("DATABASE_URL is not defined. Please check your .env file.");
   }
 
-  const adapter = new PrismaLibSql({
-    url: url,
-  })
+  const pool = new pg.Pool({ connectionString: url })
+  const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
 

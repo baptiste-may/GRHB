@@ -1,0 +1,75 @@
+services:
+  # Base de données isolée pour le développement
+  db-dev:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_DEV:-grhb_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEV:-password_dev}
+      POSTGRES_DB: ${POSTGRES_DB_DEV:-grhb_dev}
+    volumes:
+      - db-data-dev:/var/lib/postgresql/data
+    networks:
+      - backend-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_DEV:-grhb_dev} -d ${POSTGRES_DB_DEV:-grhb_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Nuxt (Dev)
+  app-dev:
+    build: .
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER_DEV:-grhb_dev}:${POSTGRES_PASSWORD_DEV:-password_dev}@db-dev:5432/${POSTGRES_DB_DEV:-grhb_dev}?schema=public"
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD_DEV}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD_DEV}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      # On peut désactiver certains services ou utiliser des clés de test ici
+      NODE_ENV: development
+    volumes:
+      - uploads-data-dev:/app/public/uploads
+    labels:
+      - "traefik.enable=true"
+      # Routeur HTTPS pour dev.busnes-histoire.fr
+      - "traefik.http.routers.grhb-dev.rule=Host(`dev.busnes-histoire.fr`)"
+      - "traefik.http.routers.grhb-dev.entrypoints=websecure"
+      - "traefik.http.routers.grhb-dev.tls.certresolver=myresolver"
+      - "traefik.http.services.grhb-dev.loadbalancer.server.port=3000"
+      # Redirection HTTP vers HTTPS pour dev
+      - "traefik.http.routers.grhb-dev-http.rule=Host(`dev.busnes-histoire.fr`)"
+      - "traefik.http.routers.grhb-dev-http.entrypoints=web"
+      - "traefik.http.routers.grhb-dev-http.middlewares=https-redirect-dev"
+      - "traefik.http.middlewares.https-redirect-dev.redirectscheme.scheme=https"
+    depends_on:
+      db-dev:
+        condition: service_healthy
+      migration-dev:
+        condition: service_completed_successfully
+    networks:
+      - proxy
+      - backend-dev
+
+  # Migration automatique pour la base de dev
+  migration-dev:
+    build: .
+    command: npx prisma migrate deploy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER_DEV:-grhb_dev}:${POSTGRES_PASSWORD_DEV:-password_dev}@db-dev:5432/${POSTGRES_DB_DEV:-grhb_dev}?schema=public"
+    depends_on:
+      db-dev:
+        condition: service_healthy
+    networks:
+      - backend-dev
+
+networks:
+  # On rejoint le réseau proxy existant (créé par le docker-compose de prod)
+  proxy:
+    external: true
+  backend-dev:
+
+volumes:
+  db-data-dev:
+  uploads-data-dev:

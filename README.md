@@ -1,75 +1,101 @@
-# Nuxt Minimal Starter
+# GRHB - Groupe de Recherches Historiques de Busnes
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Site web du Groupe de Recherches Historiques de Busnes (GRHB), construit avec Nuxt 4, Prisma et Tailwind CSS.
 
-## Setup
+## 🚀 Stack Technique
 
-Make sure to install dependencies:
+- **Framework:** [Nuxt 4](https://nuxt.com/)
+- **Runtime:** [Bun](https://bun.sh/)
+- **Base de données:** [PostgreSQL](https://www.postgresql.org/) avec [Prisma](https://www.prisma.io/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Éditeur de texte:** [Tiptap](https://tiptap.dev/) (Markdown support)
+- **Authentification:** [Nuxt Auth Utils](https://github.com/Atinux/nuxt-auth-utils)
+- **Contenu:** [Nuxt Content v3](https://content.nuxt.com/)
+- **Tests:** [Vitest](https://vitest.dev/) & [Playwright](https://playwright.dev/)
 
+## 🛠 Installation
+
+### Pré-requis
+
+- [Bun](https://bun.sh/) installé sur votre machine.
+- Une instance PostgreSQL (ou utilisez Docker).
+
+### Configuration
+
+1. Cloner le dépôt :
+   ```bash
+   git clone <repository-url>
+   cd grhb
+   ```
+
+2. Installer les dépendances :
+   ```bash
+   bun install
+   ```
+
+3. Configurer les variables d'environnement :
+   Copiez le fichier `.env.example` en `.env` et remplissez les valeurs :
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Initialiser la base de données :
+   ```bash
+   bun prisma migrate dev
+   ```
+
+## 💻 Développement
+
+Lancer le serveur de développement :
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
 bun run dev
 ```
 
-## Production
+L'application sera disponible sur `http://localhost:3000`.
 
-Build the application for production:
+Accéder à l'interface d'administration : `/admin` (nécessite le mot de passe configuré dans `ADMIN_PASSWORD`).
 
+### Scripts utiles
+
+- **Linting:** `bun run lint` (ESLint + Typecheck)
+- **Fix linting:** `bun run lint:fix`
+- **Nettoyage des images:** `bun run cleanup` (supprime les images non utilisées dans `/public/uploads`)
+- **Prisma Studio:** `bun x prisma studio` (interface pour explorer la BDD)
+
+## 🧪 Tests
+
+### Tests Unitaires & Composants (Vitest)
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+bun run test
 ```
 
-Locally preview production build:
-
+### Tests E2E (Playwright)
 ```bash
-# npm
-npm run preview
+bun run test:e2e
+```
 
-# pnpm
-pnpm preview
+## 🐳 Docker
 
-# yarn
-yarn preview
+Le projet inclut des configurations Docker pour la production et le développement, utilisant Traefik comme reverse proxy.
 
-# bun
+### Production
+```bash
+docker-compose up -d
+```
+
+### Développement
+```bash
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+## 📦 Production
+
+Pour construire l'application manuellement :
+```bash
+bun run build
 bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## 📄 Licence
+
+Ce projet est privé. Tous droits réservés.

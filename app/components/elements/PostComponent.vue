@@ -11,11 +11,11 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = computed(() => {
-    const lastItem = props.post.currentBreadcrumbs.length > 0 
+    const lastItem = props.post.currentBreadcrumbs.length > 0
         ? props.post.currentBreadcrumbs[props.post.currentBreadcrumbs.length - 1]
         : null;
     const parentPath = lastItem ? lastItem.path : '';
-    
+
     // Ensure parentPath ends correctly and starts with /
     const base = parentPath.startsWith('/') ? parentPath : '/' + parentPath;
     const fullPath = base + (base.endsWith('/') ? '' : '/') + props.post.slug;
@@ -36,13 +36,8 @@ const renderedContent = computed(() => sanitizeHtml(marked.parse(props.post.cont
 <template>
     <div class="flex flex-col gap-4">
         <UiBreadcrumbs :slugs="breadcrumbs" />
-        <div class="post-content" v-html="renderedContent"/>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div v-html="renderedContent"/>
         <UiPostFooter :post="post" />
     </div>
 </template>
-
-<style>
-.post-content img {
-    @apply block mx-auto shadow-sm hover:shadow-[0_0_10px_black] hover:scale-110 transition-all cursor-zoom-in max-w-full h-auto;
-}
-</style>

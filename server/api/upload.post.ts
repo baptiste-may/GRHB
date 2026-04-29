@@ -5,7 +5,7 @@ import path from "path";
 const UPLOAD_DIR = path.join(process.cwd(), "public/uploads");
 
 export default defineEventHandler(async (event) => {
-    // Vérification de la session
+    // Session verification
     const session = await getUserSession(event);
     if (!session.user) {
         throw createError({ status: 401, statusText: "Unauthorized" });
@@ -18,18 +18,18 @@ export default defineEventHandler(async (event) => {
         const fileData = formData.find(item => item.name === 'file');
         if (!fileData) throw createError({ status: 400, statusText: "No file uploaded" });
 
-        // 1. Validation de la taille (5Mo)
+        // 1. Size validation (5MB)
         const MAX_SIZE = 5 * 1024 * 1024;
         if (fileData.data.length > MAX_SIZE) {
-            throw createError({ status: 400, statusText: "Le fichier est trop lourd (max 5Mo)" });
+            throw createError({ status: 400, statusText: "File too large (max 5MB)" });
         }
 
-        // 2. Validation de l'extension
+        // 2. Extension validation
         const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
         const ext = path.extname(fileData.filename || '').toLowerCase();
         
         if (!allowedExtensions.includes(ext)) {
-            throw createError({ status: 400, statusText: "Format de fichier non autorisé" });
+            throw createError({ status: 400, statusText: "Unauthorized file format" });
         }
 
         if (!fileData.type?.startsWith("image/")) {
