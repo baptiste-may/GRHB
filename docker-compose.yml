@@ -1,0 +1,89 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik-certificates:/letsencrypt"
+    networks:
+      - proxy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-grhb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-grhb}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-grhb} -d ${POSTGRES_DB:-grhb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-grhb}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-grhb}?schema=public"
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      FACEBOOK_RSS: ${FACEBOOK_RSS}
+    volumes:
+      - uploads-data:/app/public/uploads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grhb.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.grhb.entrypoints=websecure"
+      - "traefik.http.routers.grhb.tls.certresolver=myresolver"
+      - "traefik.http.services.grhb.loadbalancer.server.port=3000"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.grhb-http.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.grhb-http.entrypoints=web"
+      - "traefik.http.routers.grhb-http.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    networks:
+      - proxy
+      - backend
+
+  migration:
+    build: .
+    command: npx prisma migrate deploy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-grhb}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-grhb}?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+networks:
+  proxy:
+  backend:
+
+volumes:
+  db-data:
+  traefik-certificates:
+  uploads-data:
