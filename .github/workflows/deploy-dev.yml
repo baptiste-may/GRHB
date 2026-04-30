@@ -2,7 +2,7 @@ name: Deploy Develop
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["Docker Build and Push"]
     branches: [develop]
     types:
       - completed
@@ -19,8 +19,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ${{ secrets.SERVER_PATH }}
-            git checkout develop
-            git pull origin develop
-            docker compose -f docker-compose.dev.yml build
-            docker compose -f docker-compose.dev.yml up -d
+            cd ${{ secrets.SERVER_PATH_DEV }}
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml up -d

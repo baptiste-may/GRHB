@@ -2,7 +2,7 @@ name: Deploy Production
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["Docker Build and Push"]
     branches: [main]
     types:
       - completed
@@ -19,8 +19,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ${{ secrets.SERVER_PATH }}
-            git checkout main
-            git pull origin main
-            docker compose build
+            cd ${{ secrets.SERVER_PATH_PROD }}
+            docker compose pull
             docker compose up -d
