@@ -1,37 +1,42 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import Footer from '~/components/ui/Footer.vue';
 
+const setup = () => {
+  return renderSuspended(Footer);
+};
+
 describe('Footer.vue', () => {
   it('should render the site map links correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Footer);
+    await setup();
     
-    expect(wrapper.text()).toContain('Plan du site');
-    expect(wrapper.find('a[href="/"]').text()).toBe('Accueil');
-    expect(wrapper.find('a[href="/about"]').text()).toBe('Présentation');
-    expect(wrapper.find('a[href="/admin"]').text()).toBe('Pannel Admin');
+    expect(screen.getByText(/Plan du site/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Accueil/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Présentation/i })).toHaveAttribute('href', '/about');
+    expect(screen.getByRole('link', { name: /Pannel Admin/i })).toHaveAttribute('href', '/admin');
   });
 
   it('should render the contact and social links when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Footer);
+    await setup();
     
-    expect(wrapper.text()).toContain('Suivez nous');
-    expect(wrapper.find('a[aria-label="Visiter notre page Facebook"]').exists()).toBe(true);
-    expect(wrapper.find('a[href="mailto:busneshistoire@gmail.com"]').exists()).toBe(true);
+    expect(screen.getByText(/Suivez nous/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Visiter notre page Facebook/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /busneshistoire@gmail.com/i })).toHaveAttribute('href', 'mailto:busneshistoire@gmail.com');
   });
 
   it('should render the copyright with the current year when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Footer);
+    await setup();
     const currentYear = new Date().getFullYear().toString();
     
-    expect(wrapper.text()).toContain(`© ${currentYear}`);
-    expect(wrapper.text()).toContain('Groupe de Recherches Historiques de Busnes');
+    expect(screen.getByText(new RegExp(`© ${currentYear}`))).toBeInTheDocument();
+    expect(screen.getByText(/Groupe de Recherches Historiques de Busnes/i)).toBeInTheDocument();
   });
 
   it('should render the legal links when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Footer);
+    await setup();
     
-    expect(wrapper.find('a[href="/legal"]').text()).toBe('Mentions légales');
-    expect(wrapper.find('a[href="/privacy-policy"]').text()).toBe('Politique de confidentialité');
+    expect(screen.getByRole('link', { name: 'Mentions légales' })).toHaveAttribute('href', '/legal');
+    expect(screen.getByRole('link', { name: 'Politique de confidentialité' })).toHaveAttribute('href', '/privacy-policy');
   });
 });

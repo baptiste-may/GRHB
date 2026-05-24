@@ -1,24 +1,29 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen, fireEvent } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import AdminPage from '~/pages/admin.vue';
 
+const setup = () => {
+  return renderSuspended(AdminPage);
+};
+
 describe('admin.vue', () => {
   it('should render the login form when the user is not authenticated', async () => {
-    const wrapper = await mountSuspended(AdminPage);
+    await setup();
 
-    expect(wrapper.text()).toContain('Le mot de passe est requis');
-    expect(wrapper.find('input[type="password"]').exists()).toBe(true);
+    expect(screen.getByText(/Le mot de passe est requis/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Mot de passe administrateur/i)).toHaveAttribute('type', 'password');
   });
 
   it('should render the password as plain text when the eye icon is clicked', async () => {
-    const wrapper = await mountSuspended(AdminPage);
+    await setup();
     
-    const passwordInput = wrapper.find('input');
-    expect(passwordInput.attributes('type')).toBe('password');
+    const passwordInput = screen.getByLabelText(/Mot de passe administrateur/i);
+    expect(passwordInput).toHaveAttribute('type', 'password');
     
-    const eyeButton = wrapper.find('button[type="button"]');
-    await eyeButton.trigger('click');
+    const eyeButton = screen.getByRole('button', { name: /Afficher le mot de passe/i });
+    await fireEvent.click(eyeButton);
     
-    expect(wrapper.find('input').attributes('type')).toBe('text');
+    expect(passwordInput).toHaveAttribute('type', 'text');
   });
 });

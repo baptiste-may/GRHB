@@ -1,11 +1,12 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import type { Folder, Post } from '@prisma/client';
 import Posts from '~/components/elements/Posts.vue';
 
-describe('Posts.vue', () => {
+const setup = (props = {}) => {
   const breadcrumbs = [
-    { name: 'Blog', path: 'blog', folderId: '1' }
+    { name: 'Blog', path: '/blog', folderId: '1' }
   ];
   const folders = [
     { id: '1', name: 'Folder 1', slug: 'folder-1', updatedAt: new Date() }
@@ -14,28 +15,26 @@ describe('Posts.vue', () => {
     { id: '1', title: 'Post 1', slug: 'post-1', content: 'Content 1', updatedAt: new Date() }
   ] as unknown as Post[];
 
+  return renderSuspended(Posts, {
+    props: { breadcrumbs, folders, posts, ...props }
+  });
+};
+
+describe('Posts.vue', () => {
   it('should render folders and posts correctly when they are provided', async () => {
-    const wrapper = await mountSuspended(Posts, {
-      props: { breadcrumbs, folders, posts }
-    });
+    await setup();
 
-    expect(wrapper.text()).toContain('Folder 1');
-    expect(wrapper.text()).toContain('Post 1');
+    expect(screen.getByText('Folder 1')).toBeInTheDocument();
+    expect(screen.getByText('Post 1')).toBeInTheDocument();
 
-    const links = wrapper.findAll('a');
-    const folderLink = links.find(l => l.attributes('href') === '/blog/folder-1');
-    const postLink = links.find(l => l.attributes('href') === '/blog/post-1');
-    
-    expect(folderLink?.exists()).toBe(true);
-    expect(postLink?.exists()).toBe(true);
+    expect(screen.getByRole('link', { name: /Folder 1/i })).toHaveAttribute('href', '/blog/folder-1');
+    expect(screen.getByRole('link', { name: /Post 1/i })).toHaveAttribute('href', '/blog/post-1');
   });
 
   it('should render an empty message when there are no folders or posts', async () => {
-    const wrapper = await mountSuspended(Posts, {
-      props: { breadcrumbs, folders: [], posts: [] }
-    });
+    await setup({ folders: [], posts: [] });
 
-    expect(wrapper.text()).toContain('Ce dossier est vide');
+    expect(screen.getByText('Ce dossier est vide')).toBeInTheDocument();
   });
 
   it('should render folders and posts sorted by date when they are provided', async () => {
@@ -44,14 +43,22 @@ describe('Posts.vue', () => {
       { id: '2', name: 'New Folder', slug: 'new', updatedAt: new Date('2023-01-01') }
     ] as unknown as Folder[];
     
-    const wrapper = await mountSuspended(Posts, {
-      props: { breadcrumbs, folders: foldersWithDates, posts: [] }
-    });
+    await setup({ folders: foldersWithDates, posts: [] });
 
-    const folderLinks = wrapper.findAll('a').filter(l => l.classes().includes('bg-neutral-200'));
-    const folderTitles = folderLinks.map(l => l.find('h2').text());
+    // Match links that are specifically for folders (not breadcrumbs)
+    const newFolderLink = screen.getByRole('link', { name: /New Folder/i });
+    const oldFolderLink = screen.getByRole('link', { name: /Old Folder/i });
     
-    expect(folderTitles[0]).toBe('New Folder');
-    expect(folderTitles[1]).toBe('Old Folder');
+    const allLinks = screen.getAllByRole('link');
+    const folderLinkIndices = [
+      allLinks.indexOf(newFolderLink),
+      allLinks.indexOf(oldFolderLink)
+    ];
+    
+    const index0 = folderLinkIndices[0];
+    const index1 = folderLinkIndices[1];
+    if (index0 !== undefined && index1 !== undefined) {
+      expect(index0).toBeLessThan(index1);
+    }
   });
 });

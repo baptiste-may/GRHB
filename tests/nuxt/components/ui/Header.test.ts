@@ -1,4 +1,5 @@
-import { mountSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { renderSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { screen, fireEvent } from '@testing-library/vue';
 import { describe, it, expect, vi } from 'vitest';
 import Header from '~/components/ui/Header.vue';
 
@@ -8,28 +9,31 @@ const { mockRoute } = vi.hoisted(() => ({
 
 mockNuxtImport('useRoute', () => mockRoute);
 
+const setup = () => {
+  return renderSuspended(Header);
+};
+
 describe('Header.vue', () => {
   it('should render the desktop menu correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Header);
+    await setup();
 
-    expect(wrapper.text()).toContain('Accueil');
-    expect(wrapper.text()).toContain('Présentation');
-    expect(wrapper.text()).toContain('Bulletins');
+    expect(screen.getAllByText('Accueil')[0]).toBeInTheDocument();
+    expect(screen.getByText('Présentation')).toBeInTheDocument();
+    expect(screen.getByText('Bulletins')).toBeInTheDocument();
   });
 
   it('should render the mobile menu correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(Header);
+    await setup();
 
-    const menuButton = wrapper.find('button[aria-label="Ouvrir le menu"]');
-    expect(menuButton.exists()).toBe(true);
+    expect(screen.getByRole('button', { name: /Ouvrir le menu/i })).toBeInTheDocument();
   });
 
   it('should render the sidebar when the menu button is clicked', async () => {
-    const wrapper = await mountSuspended(Header);
+    await setup();
     
-    const menuButton = wrapper.find('button[aria-label="Ouvrir le menu"]');
-    await menuButton.trigger('click');
+    const menuButton = screen.getByRole('button', { name: /Ouvrir le menu/i });
+    await fireEvent.click(menuButton);
 
-    expect(wrapper.find('[role="dialog"]').exists()).toBe(true);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

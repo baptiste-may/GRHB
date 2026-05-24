@@ -1,9 +1,10 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import type { Folder } from '@prisma/client';
 import FolderLink from '~/components/elements/posts/FolderLink.vue';
 
-describe('FolderLink.vue', () => {
+const setup = (props = {}) => {
   const folder = {
     id: '1',
     name: 'Test Folder',
@@ -11,13 +12,17 @@ describe('FolderLink.vue', () => {
     updatedAt: new Date('2023-01-01')
   } as unknown as Folder;
 
-  it('should render the folder link correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(FolderLink, {
-      props: { folder, href: '/test/test-folder' }
-    });
+  return renderSuspended(FolderLink, {
+    props: { folder, href: '/test/test-folder', ...props }
+  });
+};
 
-    expect(wrapper.text()).toContain('Test Folder');
-    expect(wrapper.text()).toContain('01/01/2023');
-    expect(wrapper.find('a').attributes('href')).toBe('/test/test-folder');
+describe('FolderLink.vue', () => {
+  it('should render the folder link correctly when the component is mounted', async () => {
+    await setup();
+
+    expect(screen.getByText('Test Folder')).toBeInTheDocument();
+    expect(screen.getByText('01/01/2023')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/test/test-folder');
   });
 });

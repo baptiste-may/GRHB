@@ -1,27 +1,32 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen, fireEvent } from '@testing-library/vue';
 import { describe, it, expect, vi } from 'vitest';
 import ContactPage from '~/pages/contact.vue';
 
 describe('contact.vue', () => {
-  it('should render the contact form correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(ContactPage);
+  const setup = () => {
+    return renderSuspended(ContactPage);
+  };
 
-    expect(wrapper.text()).toContain('Nous Contacter');
-    expect(wrapper.find('input[id="name-input"]').exists()).toBe(true);
-    expect(wrapper.find('input[id="email-input"]').exists()).toBe(true);
-    expect(wrapper.find('textarea[id="content-input"]').exists()).toBe(true);
-    expect((wrapper.find('button[type="submit"]').element as HTMLButtonElement).disabled).toBe(true);
+  it('should render the contact form correctly when the component is mounted', async () => {
+    await setup();
+
+    expect(screen.getByText(/Nous Contacter/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Votre nom/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Votre adresse mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Votre message/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Envoyer/i })).toBeDisabled();
   });
 
   it('should render the submit button as enabled when the form is valid', async () => {
-    const wrapper = await mountSuspended(ContactPage);
+    await setup();
 
-    await wrapper.find('#name-input').setValue('John Doe');
-    await wrapper.find('#email-input').setValue('john@example.com');
-    await wrapper.find('#subject-input').setValue('Hello');
-    await wrapper.find('#content-input').setValue('Message content');
+    await fireEvent.update(screen.getByLabelText(/Votre nom/i), 'John Doe');
+    await fireEvent.update(screen.getByLabelText(/Votre adresse mail/i), 'john@example.com');
+    await fireEvent.update(screen.getByLabelText(/Le sujet/i), 'Hello');
+    await fireEvent.update(screen.getByLabelText(/^Votre message/i), 'Message content');
 
-    expect((wrapper.find('button[type="submit"]').element as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByRole('button', { name: /Envoyer/i })).not.toBeDisabled();
   });
 
   it('should render a call to $fetch when the form is submitted', async () => {
@@ -30,14 +35,14 @@ describe('contact.vue', () => {
     globalThis.$fetch = mockFetch;
     window.alert = vi.fn();
 
-    const wrapper = await mountSuspended(ContactPage);
+    await setup();
 
-    await wrapper.find('#name-input').setValue('John Doe');
-    await wrapper.find('#email-input').setValue('john@example.com');
-    await wrapper.find('#subject-input').setValue('Hello');
-    await wrapper.find('#content-input').setValue('Message content');
+    await fireEvent.update(screen.getByLabelText(/Votre nom/i), 'John Doe');
+    await fireEvent.update(screen.getByLabelText(/Votre adresse mail/i), 'john@example.com');
+    await fireEvent.update(screen.getByLabelText(/Le sujet/i), 'Hello');
+    await fireEvent.update(screen.getByLabelText(/^Votre message/i), 'Message content');
 
-    await wrapper.find('form').trigger('submit');
+    await fireEvent.click(screen.getByRole('button', { name: /Envoyer/i }));
 
     expect(mockFetch).toHaveBeenCalledWith('/api/sendMail', expect.objectContaining({
       method: 'POST',

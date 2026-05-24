@@ -1,4 +1,5 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import type { Post } from '@prisma/client';
 import LatestPost from '~/components/elements/LatestPost.vue';
@@ -17,41 +18,37 @@ describe('LatestPost.vue', () => {
     isExternal: false
   } as unknown as Post & { path: string; coverImage: string; isExternal: boolean };
 
+  const setup = (props = {}) => renderSuspended(LatestPost, {
+    props: { post, ...props }
+  });
+
   it('should render the post title and content correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(LatestPost, {
-      props: { post }
-    });
+    await setup();
 
-    expect(wrapper.text()).toContain('Test Post');
-
-    expect(wrapper.html()).toContain('test');
-    expect(wrapper.find('img').attributes('src')).toBe(post.coverImage);
+    expect(screen.getByText('Test Post')).toBeInTheDocument();
+    expect(screen.getByText(/post content/i)).toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveAttribute('src', post.coverImage);
   });
 
   it('should render the correct href for an internal post when the component is mounted', async () => {
-    const wrapper = await mountSuspended(LatestPost, {
-      props: { post }
-    });
+    await setup();
 
-    expect(wrapper.attributes('href')).toBe('/blog/test-post');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/blog/test-post');
   });
 
   it('should render the correct href and target for an external post when the component is mounted', async () => {
     const externalPost = { ...post, isExternal: true, path: 'https' };
-    const wrapper = await mountSuspended(LatestPost, {
-      props: { post: externalPost }
-    });
+    await setup({ post: externalPost });
 
-    expect(wrapper.attributes('href')).toBe('/https');
-    expect(wrapper.attributes('target')).toBe('_blank');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/https');
+    expect(link).toHaveAttribute('target', '_blank');
   });
 
   it('should render the formatted date when the component is mounted', async () => {
-    const wrapper = await mountSuspended(LatestPost, {
-      props: { post }
-    });
+    await setup();
 
     const formattedDate = new Date(post.updatedAt).toLocaleDateString('fr');
-    expect(wrapper.text()).toContain(formattedDate);
+    expect(screen.getByText(new RegExp(formattedDate))).toBeInTheDocument();
   });
 });

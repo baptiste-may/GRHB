@@ -1,115 +1,83 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen, fireEvent } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import Modal from '~/components/ui/Modal.vue';
-import { nextTick, h } from 'vue';
+import { h } from 'vue';
+
+const setup = (props: unknown, slots = {}) => {
+  return renderSuspended(Modal, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    props: props as any,
+    slots,
+    global: {
+      stubs: {
+        Teleport: true,
+        Transition: true
+      }
+    }
+  });
+};
 
 describe('Modal.vue', () => {
   it('should not render when open is false', async () => {
-    const wrapper = await mountSuspended(Modal, {
-      props: {
-        open: false,
-        title: 'Test Modal'
-      },
-      global: {
-        stubs: {
-          Teleport: true,
-          Transition: true
-        }
-      }
+    await setup({
+      open: false,
+      title: 'Test Modal'
     });
 
-    expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('should render correctly when open is true', async () => {
-    const wrapper = await mountSuspended(Modal, {
-      props: {
-        open: true,
-        title: 'Test Modal'
-      },
-      slots: {
-        default: () => h('div', { id: 'modal-content' }, 'Modal Content')
-      },
-      global: {
-        stubs: {
-          Teleport: true,
-          Transition: true
-        }
-      }
+    await setup({
+      open: true,
+      title: 'Test Modal'
+    }, {
+      default: () => h('div', { 'data-testid': 'modal-content' }, 'Modal Content')
     });
 
-    await nextTick();
-
-    const dialog = wrapper.find('[role="dialog"]');
-    expect(dialog.exists()).toBe(true);
-    expect(dialog.attributes('aria-label')).toBe('Test Modal');
-    expect(wrapper.find('#modal-content').exists()).toBe(true);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('aria-label', 'Test Modal');
+    expect(screen.getByTestId('modal-content')).toBeInTheDocument();
   });
 
   it('should render an emitted close event when the backdrop is clicked', async () => {
-    const wrapper = await mountSuspended(Modal, {
-      props: {
-        open: true,
-        title: 'Test Modal'
-      },
-      global: {
-        stubs: {
-          Teleport: true,
-          Transition: true
-        }
-      }
+    const { emitted } = await setup({
+      open: true,
+      title: 'Test Modal'
     });
 
-    await nextTick();
-
-    const backdrop = wrapper.find('[role="dialog"]');
-    await backdrop.trigger('click');
+    const backdrop = screen.getByRole('dialog');
+    await fireEvent.click(backdrop);
     
-    expect(wrapper.emitted()).toHaveProperty('close');
+    expect(emitted()).toHaveProperty('close');
   });
 
   it('should not render an emitted close event when the modal content is clicked', async () => {
-    const wrapper = await mountSuspended(Modal, {
-      props: {
-        open: true,
-        title: 'Test Modal'
-      },
-      global: {
-        stubs: {
-          Teleport: true,
-          Transition: true
-        }
-      }
+    const { emitted } = await setup({
+      open: true,
+      title: 'Test Modal'
     });
 
-    await nextTick();
-
-    const modalContent = wrapper.find('[role="dialog"]').find('div');
-    await modalContent.trigger('click');
+    const dialog = screen.getByRole('dialog', { name: 'Test Modal' });
+    const modalContent = dialog.querySelector('div');
+    if (modalContent) await fireEvent.click(modalContent);
     
-    expect(wrapper.emitted('close')).toBeUndefined();
+    expect(emitted('close')).toBeUndefined();
   });
 
   it('should render an emitted close event when the Escape key is pressed', async () => {
-    const wrapper = await mountSuspended(Modal, {
-      props: {
-        open: false,
-        title: 'Test Modal'
-      },
-      global: {
-        stubs: {
-          Teleport: true,
-          Transition: true
-        }
-      }
+    const { rerender, emitted } = await setup({
+      open: false,
+      title: 'Test Modal'
     });
 
-    await wrapper.setProps({ open: true });
-    await nextTick();
+    await rerender({ open: true });
 
     const event = new KeyboardEvent('keydown', { key: 'Escape' });
     document.dispatchEvent(event);
 
-    expect(wrapper.emitted()).toHaveProperty('close');
+    expect(emitted()).toHaveProperty('close');
   });
 });

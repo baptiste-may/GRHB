@@ -1,4 +1,5 @@
-import { mountSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { renderSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect, vi } from 'vitest';
 import AboutPage from '~/pages/about.vue';
 import { ref } from 'vue';
@@ -9,6 +10,11 @@ const { mockUseFetch } = vi.hoisted(() => ({
 
 mockNuxtImport('useFetch', () => mockUseFetch);
 
+const setup = (data: Record<string, unknown> | null = null) => {
+  mockUseFetch.mockReturnValue({ data: ref(data) });
+  return renderSuspended(AboutPage);
+};
+
 describe('about.vue', () => {
   it('should render post content when data is available', async () => {
     const data = {
@@ -18,19 +24,15 @@ describe('about.vue', () => {
         { id: 1, title: 'About GRHB', content: 'About content', slug: 'about', updatedAt: new Date() }
       ]
     };
-    mockUseFetch.mockReturnValue({ data: ref(data) });
+    
+    await setup(data);
 
-    const wrapper = await mountSuspended(AboutPage);
-
-    expect(wrapper.findComponent({ name: 'ElementsPostComponent' }).exists()).toBe(true);
-    expect(wrapper.text()).toContain('About GRHB');
+    expect(screen.getByText('About GRHB')).toBeInTheDocument();
   });
 
   it('should render an error message when no post is available', async () => {
-    mockUseFetch.mockReturnValue({ data: ref(null) });
+    await setup(null);
 
-    const wrapper = await mountSuspended(AboutPage);
-
-    expect(wrapper.text()).toContain("Veuillez contacter l'administrateur du site");
+    expect(screen.getByText(/Veuillez contacter l'administrateur du site/i)).toBeInTheDocument();
   });
 });

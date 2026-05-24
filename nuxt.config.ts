@@ -12,6 +12,13 @@ export default defineNuxtConfig({
     "nuxt-auth-utils",
     "nuxt-security",
   ],
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        types: ["@testing-library/jest-dom/vitest"]
+      }
+    }
+  },
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL,
   },

@@ -1,18 +1,23 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import DefaultLayout from '~/layouts/default.vue';
 import { h } from 'vue';
 
+const setup = (slots = {}) => {
+  return renderSuspended(DefaultLayout, { slots });
+};
+
 describe('default layout', () => {
   it('should render the header, footer and slot content when the layout is used', async () => {
-    const wrapper = await mountSuspended(DefaultLayout, {
-      slots: {
-        default: () => h('div', { id: 'test-content' }, 'Main Content')
-      }
+    await setup({
+      default: () => h('div', { 'data-testid': 'test-content' }, 'Main Content')
     });
 
-    expect(wrapper.findComponent({ name: 'UiHeader' }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: 'UiFooter' }).exists()).toBe(true);
-    expect(wrapper.find('#test-content').exists()).toBe(true);
+    // We can't easily check for components by name in Testing Library, 
+    // but we can check for their content or roles.
+    expect(screen.getByRole('banner')).toBeInTheDocument(); // Header usually has banner role
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument(); // Footer usually has contentinfo role
+    expect(screen.getByTestId('test-content')).toBeInTheDocument();
   });
 });

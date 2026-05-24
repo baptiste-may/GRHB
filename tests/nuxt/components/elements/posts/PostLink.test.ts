@@ -1,7 +1,14 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import type { Post } from '@prisma/client';
 import PostLink from '~/components/elements/posts/PostLink.vue';
+
+const setup = (post: Post, href: string) => {
+  return renderSuspended(PostLink, {
+    props: { post, href }
+  });
+};
 
 describe('PostLink.vue', () => {
   const post = {
@@ -13,13 +20,11 @@ describe('PostLink.vue', () => {
   } as unknown as Post;
 
   it('should render the post link correctly when the component is mounted', async () => {
-    const wrapper = await mountSuspended(PostLink, {
-      props: { post, href: '/test/test-post' }
-    });
+    await setup(post, '/test/test-post');
 
-    expect(wrapper.text()).toContain('Test Post');
-    expect(wrapper.text()).toContain('Test content for the snippet');
-    expect(wrapper.text()).toContain('01/01/2023');
-    expect(wrapper.find('a').attributes('href')).toBe('/test/test-post');
+    expect(screen.getByText('Test Post')).toBeInTheDocument();
+    expect(screen.getByText(/Test content for the snippet/i)).toBeInTheDocument();
+    expect(screen.getByText('01/01/2023')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/test/test-post');
   });
 });

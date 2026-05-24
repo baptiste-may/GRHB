@@ -41,6 +41,7 @@ const getPostSnippet = (content: string) => {
         <div class="flex justify-end gap-2" @click.stop>
             <button
                 class="p-2 bg-neutral-100 rounded-lg hover:bg-white transition-colors"
+                title="Modifier"
                 @click="emit('edit', post)"
             >
                 <EditIcon :size="20" />
@@ -48,6 +49,7 @@ const getPostSnippet = (content: string) => {
             <button
                 v-if="!isRoot"
                 class="p-2 bg-neutral-100 rounded-lg hover:bg-white transition-colors text-red-600"
+                title="Supprimer"
                 @click="emit('delete', post)"
             >
                 <TrashIcon :size="20" />

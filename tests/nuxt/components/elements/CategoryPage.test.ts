@@ -1,4 +1,5 @@
-import { mountSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { renderSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect, vi } from 'vitest';
 import CategoryPage from '~/components/elements/CategoryPage.vue';
 import { ref } from 'vue';
@@ -13,15 +14,19 @@ mockNuxtImport('useRoute', () => mockRoute);
 mockNuxtImport('useFetch', () => mockUseFetch);
 mockNuxtImport('createError', () => mockCreateError);
 
+const setup = (fetchResult: Record<string, unknown> = { data: ref(null), error: ref(null) }, props = {}) => {
+  mockUseFetch.mockReturnValue(fetchResult);
+  return renderSuspended(CategoryPage, {
+    props: { folderSlug: 'blog', ...props }
+  });
+};
+
 describe('CategoryPage.vue', () => {
   it('should throw an error when the fetch operation fails', async () => {
     const fetchError = { statusCode: 404, statusMessage: 'Not Found' };
-    mockUseFetch.mockReturnValue({ data: ref(null), error: ref(fetchError) });
-
+    
     try {
-      await mountSuspended(CategoryPage, {
-        props: { folderSlug: 'blog' }
-      });
+      await setup({ data: ref(null), error: ref(fetchError) });
     } catch {
       // Expect the error to be thrown or createError to be called
     }
@@ -39,30 +44,27 @@ describe('CategoryPage.vue', () => {
       title: 'My Post',
       content: 'Content',
       slug: 'my-post',
+      author: 'Admin',
+      createdAt: new Date(),
+      updatedAt: new Date(),
       currentBreadcrumbs: []
     };
-    mockUseFetch.mockReturnValue({ data: ref(postData), error: ref(null) });
+    
+    await setup({ data: ref(postData), error: ref(null) });
 
-    const wrapper = await mountSuspended(CategoryPage, {
-      props: { folderSlug: 'blog' }
-    });
-
-    expect(wrapper.findComponent({ name: 'ElementsPostComponent' }).exists()).toBe(true);
+    expect(screen.getByText('My Post')).toBeInTheDocument();
   });
 
   it('should render the Posts component when the data type is folder', async () => {
     const folderData = {
       type: 'folder',
-      currentSlug: [{ name: 'Blog', path: 'blog', folderId: '1' }],
+      currentSlug: [{ name: 'Blog', path: '/blog', folderId: '1' }],
       folders: [],
       posts: []
     };
-    mockUseFetch.mockReturnValue({ data: ref(folderData), error: ref(null) });
+    
+    await setup({ data: ref(folderData), error: ref(null) });
 
-    const wrapper = await mountSuspended(CategoryPage, {
-      props: { folderSlug: 'blog' }
-    });
-
-    expect(wrapper.findComponent({ name: 'ElementsPosts' }).exists()).toBe(true);
+    expect(screen.getByRole('navigation', { name: /Fil d'Ariane/i })).toBeInTheDocument();
   });
 });

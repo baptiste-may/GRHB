@@ -43,6 +43,7 @@ const emit = defineEmits<{
             <button
                 v-if="!isRoot"
                 class="p-2 bg-neutral-100 rounded-lg hover:bg-white transition-colors"
+                title="Modifier"
                 @click="emit('edit', folder)"
             >
                 <EditIcon :size="20" />
@@ -50,6 +51,7 @@ const emit = defineEmits<{
             <button
                 v-if="!isRoot"
                 class="p-2 bg-neutral-100 rounded-lg hover:bg-white transition-colors text-red-600"
+                title="Supprimer"
                 @click="emit('delete', folder)"
             >
                 <TrashIcon :size="20" />

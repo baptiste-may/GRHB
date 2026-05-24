@@ -1,7 +1,16 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import PostFooter from '~/components/ui/PostFooter.vue';
 import type { Post } from '@prisma/client';
+
+const setup = (post: Post) => {
+  return renderSuspended(PostFooter, {
+    props: {
+      post
+    }
+  });
+};
 
 describe('PostFooter.vue', () => {
   const mockPost = {
@@ -16,15 +25,11 @@ describe('PostFooter.vue', () => {
   } as Post;
 
   it('should render the published date and author when the post is provided', async () => {
-    const wrapper = await mountSuspended(PostFooter, {
-      props: {
-        post: mockPost
-      }
-    });
+    await setup(mockPost);
 
-    expect(wrapper.text()).toContain('Publié le');
-    expect(wrapper.text()).toContain('janvier 2023');
-    expect(wrapper.text()).toContain('Author Name');
+    expect(screen.getByText(/Publié le/i)).toBeInTheDocument();
+    expect(screen.getByText(/janvier 2023/i)).toBeInTheDocument();
+    expect(screen.getByText(/Author Name/i)).toBeInTheDocument();
   });
 
   it('should render the modified date when it is different from the published date', async () => {
@@ -33,13 +38,9 @@ describe('PostFooter.vue', () => {
       updatedAt: new Date('2023-02-01')
     } as Post;
 
-    const wrapper = await mountSuspended(PostFooter, {
-      props: {
-        post: modifiedPost
-      }
-    });
+    await setup(modifiedPost);
 
-    expect(wrapper.text()).toContain('modifié le');
-    expect(wrapper.text()).toContain('février 2023');
+    expect(screen.getByText(/modifié le/i)).toBeInTheDocument();
+    expect(screen.getByText(/février 2023/i)).toBeInTheDocument();
   });
 });

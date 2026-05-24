@@ -1,26 +1,38 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { renderSuspended } from '@nuxt/test-utils/runtime';
+import { screen, fireEvent } from '@testing-library/vue';
 import { describe, it, expect } from 'vitest';
 import PostModal from '~/components/elements/admin/PostModal.vue';
+
+const setup = (props = {}) => {
+  return renderSuspended(PostModal, {
+    props: {
+      open: true,
+      postData: { title: 'Title', content: 'Content', author: 'Author' },
+      ...props
+    },
+    global: {
+      stubs: {
+        Teleport: true,
+        Transition: true,
+        UiTipTapEditor: {
+           template: '<textarea :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+           props: ['modelValue']
+        }
+      }
+    }
+  });
+};
 
 describe('PostModal.vue', () => {
   it('should render the post data and handle submission when the modal is open', async () => {
     const postData = { title: 'Title', content: 'Content', author: 'Author' };
-    const wrapper = await mountSuspended(PostModal, {
-      props: {
-        open: true,
-        postData
-      },
-      attachTo: document.body
-    });
+    const { emitted } = await setup({ postData });
 
-    const titleInput = document.body.querySelector('input[placeholder="Titre du post"]') as HTMLInputElement;
-    expect(titleInput).toBeTruthy();
-    expect(titleInput.value).toBe('Title');
+    const titleInput = screen.getByPlaceholderText('Titre du post');
+    expect(titleInput).toHaveValue('Title');
     
-    const form = document.body.querySelector('form') as HTMLFormElement;
-    form.dispatchEvent(new Event('submit'));
+    await fireEvent.click(screen.getByRole('button', { name: /Créer/i }));
     
-    expect(wrapper.emitted('submit')?.[0]).toEqual([postData]);
-    wrapper.unmount();
+    expect(emitted('submit')?.[0]).toEqual([postData]);
   });
 });
