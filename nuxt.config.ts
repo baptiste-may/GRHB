@@ -12,6 +12,12 @@ export default defineNuxtConfig({
     "nuxt-auth-utils",
     "nuxt-security",
   ],
+  nitro: {
+    preset: "bun",
+    externals: {
+      inline: ["ofetch", "unenv"],
+    },
+  },
   typescript: {
     tsConfig: {
       compilerOptions: {

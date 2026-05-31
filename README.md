@@ -1,101 +1,111 @@
 # GRHB - Groupe de Recherches Historiques de Busnes
 
-Site web du Groupe de Recherches Historiques de Busnes (GRHB), construit avec Nuxt 4, Prisma et Tailwind CSS.
+The official website for the Groupe de Recherches Historiques de Busnes (GRHB), built with Nuxt 4, Prisma, and Tailwind CSS.
 
-## 🚀 Stack Technique
+## 🚀 Tech Stack
 
 - **Framework:** [Nuxt 4](https://nuxt.com/)
 - **Runtime:** [Bun](https://bun.sh/)
-- **Base de données:** [PostgreSQL](https://www.postgresql.org/) avec [Prisma](https://www.prisma.io/)
+- **Database:** [PostgreSQL](https://www.postgresql.org/) with [Prisma](https://www.prisma.io/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Éditeur de texte:** [Tiptap](https://tiptap.dev/) (Markdown support)
-- **Authentification:** [Nuxt Auth Utils](https://github.com/Atinux/nuxt-auth-utils)
-- **Contenu:** [Nuxt Content v3](https://content.nuxt.com/)
-- **Tests:** [Vitest](https://vitest.dev/) & [Playwright](https://playwright.dev/)
+- **Rich Text Editor:** [Tiptap](https://tiptap.dev/) (Markdown support)
+- **Authentication:** [Nuxt Auth Utils](https://github.com/Atinux/nuxt-auth-utils)
+- **Content:** [Nuxt Content v3](https://content.nuxt.com/)
+- **Infrastructure:** [Docker](https://www.docker.com/) & [Traefik](https://traefik.io/) (Reverse Proxy + Auto SSL)
+- **Testing:** [Vitest](https://vitest.dev/) & [Playwright](https://playwright.dev/)
 
 ## 🛠 Installation
 
-### Pré-requis
+### Prerequisites
 
-- [Bun](https://bun.sh/) installé sur votre machine.
-- Une instance PostgreSQL (ou utilisez Docker).
+- [Bun](https://bun.sh/) installed on your machine.
+- A PostgreSQL instance (or use the provided Docker setup).
 
 ### Configuration
 
-1. Cloner le dépôt :
+1. Clone the repository:
    ```bash
    git clone <repository-url>
    cd grhb
    ```
 
-2. Installer les dépendances :
+2. Install dependencies:
    ```bash
    bun install
    ```
 
-3. Configurer les variables d'environnement :
-   Copiez le fichier `.env.example` en `.env` et remplissez les valeurs :
+3. Configure environment variables:
+   Copy `.env.example` to `.env` and fill in the values:
    ```bash
    cp .env.example .env
    ```
 
-4. Initialiser la base de données :
+   **Important for deployment:**
+   - `DOMAIN_NAME`: Your website domain (e.g., `grhb-busnes.fr`)
+   - `TRAEFIK_ACME_EMAIL`: Email for Let's Encrypt SSL certificates.
+   - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`: Credentials for the internal database.
+
+4. Initialize the database (local development):
    ```bash
-   bun prisma migrate dev
+   bun x prisma migrate dev
    ```
 
-## 💻 Développement
+## 💻 Development
 
-Lancer le serveur de développement :
+Start the development server:
 ```bash
 bun run dev
 ```
 
-L'application sera disponible sur `http://localhost:3000`.
+The application will be available at `http://localhost:3000`.
 
-Accéder à l'interface d'administration : `/admin` (nécessite le mot de passe configuré dans `ADMIN_PASSWORD`).
+Access the admin interface at `/admin` (requires the password configured in `ADMIN_PASSWORD`).
 
-### Scripts utiles
+### Useful Scripts
 
 - **Linting:** `bun run lint` (ESLint + Typecheck)
 - **Fix linting:** `bun run lint:fix`
-- **Nettoyage des images:** `bun run cleanup` (supprime les images non utilisées dans `/public/uploads`)
-- **Prisma Studio:** `bun x prisma studio` (interface pour explorer la BDD)
+- **Image Cleanup:** `bun run cleanup` (removes unused images in `/public/uploads`)
+- **Prisma Studio:** `bun x prisma studio` (GUI to explore the database)
 
-## 🧪 Tests
+## 🐳 Deployment (Docker & Traefik)
 
-### Tests Unitaires & Composants (Vitest)
+The project is designed to be self-hosted using Docker Compose and Traefik for automatic HTTPS management.
+
+### Production Start
+
+1. Ensure your `.env` file is correctly filled with production values.
+2. Launch the stack:
+   ```bash
+   docker compose up -d --build
+   ```
+
+This will start:
+- **Nuxt App:** The website (built with Bun, running with automatic Prisma migrations).
+- **PostgreSQL:** Database with persistent storage.
+- **Traefik:** Reverse proxy with automated Let's Encrypt SSL and dashboard.
+
+### Dashboard Traefik
+The dashboard is available at `https://dashboard.<DOMAIN_NAME>`.
+
+### Persistence
+The following data is persisted via Docker volumes:
+- `db_data`: All database records.
+- `uploads`: All images uploaded via the admin interface (mapped to `/app/public/uploads`).
+- `traefik_certs`: SSL certificates.
+
+## 🧪 Testing
+
+### Unit & Component Tests (Vitest)
 ```bash
 bun run test
 ```
 
-### Tests E2E (Playwright)
+### E2E Tests (Playwright)
 ```bash
 bun run test:e2e
 ```
 
-## 🐳 Docker
+## 📄 License
 
-Le projet inclut des configurations Docker pour la production et le développement, utilisant Traefik comme reverse proxy.
-
-### Production
-```bash
-docker-compose up -d
-```
-
-### Développement
-```bash
-docker-compose -f docker-compose.dev.yml up -d
-```
-
-## 📦 Production
-
-Pour construire l'application manuellement :
-```bash
-bun run build
-bun run preview
-```
-
-## 📄 Licence
-
-Ce projet est privé. Tous droits réservés.
+This project is private. All rights reserved.
