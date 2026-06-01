@@ -25,6 +25,9 @@ describe('Toolbar.vue', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: /Nouveau post/i }));
     expect(emitted('createPost')).toBeTruthy();
+
+    await fireEvent.click(screen.getByRole('button', { name: /Se déconnecter/i }));
+    expect(emitted('disconnect')).toBeTruthy();
   });
 
   it('should render the back button as disabled when at the root level', async () => {

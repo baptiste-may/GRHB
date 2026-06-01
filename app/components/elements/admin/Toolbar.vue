@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronLeftIcon, FolderPlusIcon, FilePlusIcon } from "lucide-vue-next";
+import { ChevronLeftIcon, FolderPlusIcon, FilePlusIcon, LogOutIcon } from "lucide-vue-next";
 
 defineProps<{
     currentSlugLength: number;
@@ -7,7 +7,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'back' | 'createFolder' | 'createPost'): void;
+    (e: 'back' | 'createFolder' | 'createPost' | 'disconnect'): void;
 }>();
 </script>
 
@@ -35,6 +35,15 @@ const emit = defineEmits<{
         >
             <FilePlusIcon :size="20" />
             Nouveau post
+        </button>
+        <div class="flex-grow" />
+        <button
+            :disabled="isLoading"
+            class="flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-xl bg-neutral-200 enabled:hover:bg-neutral-300 border rounded-xl enabled:hover:shadow-[0_0_5px_black] cursor-pointer enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            @click="emit('disconnect')"
+        >
+            <LogOutIcon :size="20" />
+            Se déconnecter
         </button>
     </div>
 </template>

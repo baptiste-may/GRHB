@@ -27,6 +27,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    ovhAppKey: process.env.OVH_APP_KEY,
+    ovhAppSecret: process.env.OVH_APP_SECRET,
+    ovhAllowedNics: (process.env.NUXT_OVH_ALLOWED_NIC_HANDLES || '').split(','),
   },
   security: {
     rateLimiter: {
@@ -39,7 +42,8 @@ export default defineNuxtConfig({
     headers: {
       contentSecurityPolicy: {
         'script-src': ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'"],
-        'connect-src': ["'self'", "https:", "http:", "ws:", "wss:"]
+        'connect-src': ["'self'", "https:", "http:", "ws:", "wss:"],
+        'img-src': ["'self'", "data:", "https://www.ovhcloud.com"]
       }
     }
   },

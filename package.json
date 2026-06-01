@@ -23,6 +23,7 @@
     "@nuxt/fonts": "^0.14.0",
     "@nuxt/image": "2.0.0",
     "@nuxtjs/tailwindcss": "6.14.0",
+    "@ovhcloud/node-ovh": "^3.0.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@tiptap/extension-image": "^3.22.4",

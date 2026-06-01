@@ -6,7 +6,12 @@ useSeoMeta({
     robots: "noindex, nofollow",
 });
 
-const { loggedIn } = useUserSession();
+const { loggedIn, clear: clearSession } = useUserSession();
+
+const logout = async () => {
+    await $fetch("/api/auth/logout", { method: "POST" });
+    await clearSession();
+};
 
 // Admin Table State
 const isLoading = ref(false);
@@ -213,6 +218,7 @@ const submitPostForm = async (form: { title: string; content: string; author: st
                 @back="goBack"
                 @create-folder="openCreateFolder"
                 @create-post="openCreatePost"
+                @disconnect="logout"
             />
 
             <div class="flex flex-col gap-4 w-full">

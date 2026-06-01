@@ -59,7 +59,7 @@ bun run dev
 
 The application will be available at `http://localhost:3000`.
 
-Access the admin interface at `/admin` (requires the password configured in `ADMIN_PASSWORD`).
+Access the admin interface at `/admin` (requires login via OVHcloud IAM).
 
 ### Useful Scripts
 

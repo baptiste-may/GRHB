@@ -62,7 +62,9 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
       NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      OVH_APP_KEY: ${OVH_APP_KEY}
+      OVH_APP_SECRET: ${OVH_APP_SECRET}
+      NUXT_OVH_ALLOWED_NIC_HANDLES: ${NUXT_OVH_ALLOWED_NIC_HANDLES}
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_USER: ${EMAIL_USER}
@@ -70,6 +72,8 @@ services:
       FACEBOOK_RSS: ${FACEBOOK_RSS}
     volumes:
       - uploads:/app/public/uploads
+    ports:
+      - "3000:3000"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.grhb.rule=Host(`${DOMAIN_NAME}`)"
