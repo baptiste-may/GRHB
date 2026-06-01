@@ -33,7 +33,8 @@ export default defineEventHandler(async (event) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 10, // 10 minutes
-            path: '/'
+            path: '/',
+            sameSite: 'lax'
         });
 
         // Redirect user to OVH validation page

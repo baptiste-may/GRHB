@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
         // The user should at least put their own NIC in the .env
         if (!allowedNics || allowedNics.length === 0 || !allowedNics.includes(userNic)) {
             console.warn(`Unauthorized OVH login attempt: ${userNic}`);
-            deleteCookie(event, 'ovh_consumer_key');
+            deleteCookie(event, 'ovh_consumer_key', { path: '/' });
             return sendRedirect(event, '/admin?error=unauthorized_nic');
         }
 
@@ -43,11 +43,11 @@ export default defineEventHandler(async (event) => {
         });
 
         // 4. Cleanup and redirect
-        deleteCookie(event, 'ovh_consumer_key');
+        deleteCookie(event, 'ovh_consumer_key', { path: '/' });
         return sendRedirect(event, '/admin');
     } catch (error) {
         console.error('OVH Auth Callback Error:', error);
-        deleteCookie(event, 'ovh_consumer_key');
+        deleteCookie(event, 'ovh_consumer_key', { path: '/' });
         return sendRedirect(event, '/admin?error=auth_failed');
     }
 });
