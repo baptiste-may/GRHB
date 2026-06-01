@@ -210,6 +210,6 @@ const buttons = computed(() => {
   @apply border border-gray-300 p-2;
 }
 .prose .selectedCell:after {
-  @apply bg-blue-100 bg-opacity-30;
+  @apply bg-blue-100/30;
 }
 </style>
