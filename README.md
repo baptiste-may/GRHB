@@ -77,8 +77,15 @@ The project is designed to be self-hosted using Docker Compose and Traefik for a
 1. Ensure your `.env` file is correctly filled with production values.
 2. Launch the stack:
    ```bash
-   docker compose up -d --build
+   docker compose pull
+   docker compose up -d
    ```
+
+To update the application to the latest version, simply run:
+```bash
+docker compose pull app
+docker compose up -d app
+```
 
 This will start:
 - **Nuxt App:** The website (built with Bun, running with automatic Prisma migrations).
