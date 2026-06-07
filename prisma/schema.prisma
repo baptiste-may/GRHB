@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  folders   Folder[] @relation("FolderHierarchy")
+  posts     Post[]
+
+  @@unique([slug, parentId])
+  @@index([slug])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String
+  content   String
+  author    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  folderId  String?
+  folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@unique([slug, folderId])
+  @@index([slug])
+}
