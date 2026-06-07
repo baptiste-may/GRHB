@@ -26,10 +26,10 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL,
-    ovhAppKey: process.env.OVH_APP_KEY,
-    ovhAppSecret: process.env.OVH_APP_SECRET,
-    ovhAllowedNics: (process.env.NUXT_OVH_ALLOWED_NIC_HANDLES || '').split(','),
+    databaseUrl: '',
+    ovhAppKey: '',
+    ovhAppSecret: '',
+    ovhAllowedNics: [],
   },
   security: {
     rateLimiter: {
