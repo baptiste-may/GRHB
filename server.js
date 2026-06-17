@@ -159,7 +159,6 @@ function dataURLtoFile(dataurl, callback) {
     }
     const filename = `${randomID()}.${mime.split("/")[1]}`;
     fs.writeFileSync(`./public/feed-data/${filename}`, u8arr);
-    cleanFeedData();
     callback(filename);
 }
 
