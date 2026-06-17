@@ -178,7 +178,7 @@ socket.on("login", (token) => {
                 const img = imgs[n];
                 const imgData = $(img);
                 const src = imgData.attr("src");
-                if (!src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
+                if (src && !src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
                     imgData.attr("id", `image-${n}`);
                     socket.emit("add-image-to-feed-data", token, n, src);
                     imagesInChange[n] = n;
@@ -189,7 +189,8 @@ socket.on("login", (token) => {
             while (Object.values(imagesInChange).length !== 0) {
                 if (Date.now() > uploadDeadline) {
                     console.warn("Image upload timed out; some images may not have been saved.");
-                    break;
+                    alert("Le téléchargement des images a expiré. Vos modifications n'ont pas été sauvegardées.");
+                    return;
                 }
                 await delay(100);
             }
@@ -303,7 +304,7 @@ socket.on("login", (token) => {
                 const img = imgs[n];
                 const imgData = $(img);
                 const src = imgData.attr("src");
-                if (!src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
+                if (src && !src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
                     imgData.attr("id", `image-${n}`);
                     socket.emit("add-image-to-feed-data", token, n, src);
                     imagesInChange[n] = n;
@@ -314,7 +315,8 @@ socket.on("login", (token) => {
             while (Object.values(imagesInChange).length !== 0) {
                 if (Date.now() > uploadDeadline) {
                     console.warn("Image upload timed out; some images may not have been saved.");
-                    break;
+                    alert("Le téléchargement des images a expiré. Vos modifications n'ont pas été sauvegardées.");
+                    return;
                 }
                 await delay(100);
             }
