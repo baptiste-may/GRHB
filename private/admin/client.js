@@ -212,6 +212,108 @@ socket.on("login", (token) => {
     socket.on("edit-article", afterManaging);
     socket.on("delete-article", afterManaging);
 
+    socket.on("get-introducing", (res, data) => {
+        if (res !== "OK") {
+            alert("Une erreur est apparue :\n\n" + res);
+            return;
+        }
+        loadIntroducingEditor(data);
+    });
+
+    socket.on("edit-introducing", (res) => {
+        if (res !== "OK") {
+            alert("Une erreur est apparue :\n\n" + res);
+        } else {
+            alert("La page Présentation a bien été sauvegardée !");
+            loadFolderAndBlogsTab();
+            loadFoldersAndBlogs(getListFromPath(path));
+        }
+    });
+
+    /**
+     * Load the introducing page editor
+     * @param data {{ title: string, content: string }}
+     */
+    function loadIntroducingEditor(data) {
+        $("article")
+            .empty()
+            .append("<h1>Admin Pannel</h1>")
+            .append("<hr>")
+            .append("<br id='last-br'>");
+
+        const lastBr = $("#last-br");
+
+        // Cancel editing button
+        const cancelIcon = $("<lord-icon id='go-back-icon' src='https://cdn.lordicon.com/jxwksgwv.json' trigger='hover' state='hover-2'></lord-icon>");
+        lastBr.before(cancelIcon);
+        const iconData = $(cancelIcon[0].shadowRoot.querySelector("div"));
+        iconData.css({display: "grid", "justify-items": "center", "align-items": "center", width: "100%", height: "100%"});
+        cancelIcon.on("click", () => {
+            const res = window.confirm("Vous confirmez l'abandon des modifications de la page Présentation ?");
+            if (res) {
+                loadFolderAndBlogsTab();
+                loadFoldersAndBlogs(getListFromPath(path));
+            }
+        });
+
+        const editorForm = $("<form id='editor-form'>");
+        lastBr.before(editorForm);
+
+        const titleInput = $(`<h1><label for="title-input">Titre : </label><input style="width: calc(100% - 15px)" type="text" id="title-input" value="${data.title}" required></h1>`);
+        editorForm.append(titleInput);
+
+        const textInput = $("<div id='editor'></div><br>");
+        const textAreaCss = { "height": "auto", "min-height": "250px" };
+        textInput.css(textAreaCss);
+        editorForm.append(textInput);
+
+        const saveInput = $(`<input type="submit" value="Sauvegarder">`);
+        editorForm.append(saveInput);
+
+        const quill = new Quill("#editor", {
+            modules: {
+                toolbar: [
+                    [{ "header": [1, 2, 3, false] }],
+                    ["bold", "italic", "underline", "strike"],
+                    ["blockquote", "code-block"],
+                    [{ "list": "ordered" }, { "list": "bullet" }],
+                    [{ "indent": "-1" }, { "indent": "+1" }],
+                    ["link", "image"]
+                ]
+            },
+            theme: "snow"
+        });
+
+        $(textInput.children()[0]).css(textAreaCss);
+        quill.setContents(quill.clipboard.convert(data.content), "silent");
+
+        editorForm.on("submit", async (e) => {
+            e.preventDefault();
+
+            // Saving images embedded in the editor
+            const imgs = $("#editor").find("img");
+            imagesInChange = {};
+            for (let n = 0; n < imgs.length; n++) {
+                const img = imgs[n];
+                const imgData = $(img);
+                const src = imgData.attr("src");
+                if (!src.startsWith("/feed-data/")) {
+                    imgData.attr("id", `image-${n}`);
+                    socket.emit("add-image-to-feed-data", token, n, src);
+                    imagesInChange[n] = n;
+                }
+            }
+
+            while (Object.values(imagesInChange).length !== 0) {
+                await delay(100);
+            }
+
+            const title = $("#title-input").val();
+            const content = quill.root.innerHTML;
+            socket.emit("edit-introducing", token, title, content);
+        });
+    }
+
     function firstLoad() {
         $("#folder-add-form").hide();
         $("#blogs-add-form").hide();
@@ -225,6 +327,15 @@ socket.on("login", (token) => {
                 path += categorie[0];
                 loadFoldersAndBlogs(feedData[categorie[0]]);
             });
+        });
+
+        // Adding the "Introducing" special card
+        const introducingItem = $(`<div id="introducing-admin-card" class="admin-grid-item">
+                                    <span>Présentation</span>
+                                </div>`);
+        $("#grid-blogs").append(introducingItem);
+        introducingItem.on("click", () => {
+            socket.emit("get-introducing", token);
         });
     }
 

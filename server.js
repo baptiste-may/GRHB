@@ -58,6 +58,30 @@ const feedManager = new FeedManager(
     }
 );
 
+// Path to the introducing page content file
+const introducingContentPath = "./public/introducing/content.json";
+
+/**
+ * Get the introducing page content
+ * @returns {{ title: string, content: string }}
+ */
+function getIntroducingContent() {
+    if (!fs.existsSync(introducingContentPath)) {
+        return { title: "Présentation", content: "" };
+    }
+    return JSON.parse(fs.readFileSync(introducingContentPath, "utf8"));
+}
+
+/**
+ * Save the introducing page content
+ * @param {string} title
+ * @param {string} content
+ */
+function saveIntroducingContent(title, content) {
+    fs.writeFileSync(introducingContentPath, JSON.stringify({ title, content }, null, 4), "utf8");
+    console.log("Introducing page content updated!");
+}
+
 // Creating subpages
 app.get("/newsletters/*", (req, res) => {
     res.sendFile(path.join(__dirname, "/public/newsletters/index.html"));
@@ -222,6 +246,27 @@ io.on("connection", (socket) => {
             dataURLtoFile(url, (filename) => {
                 socket.emit("add-image-to-feed-data", imageToken, filename);
             });
+        });
+
+        // Get introducing page content
+        socket.on("get-introducing", (askedToken) => {
+            if (askedToken !== token) return;
+            try {
+                socket.emit("get-introducing", "OK", getIntroducingContent());
+            } catch (e) {
+                socket.emit("get-introducing", e);
+            }
+        });
+
+        // Edit introducing page content
+        socket.on("edit-introducing", (askedToken, title, content) => {
+            if (askedToken !== token) return;
+            try {
+                saveIntroducingContent(title, content);
+                socket.emit("edit-introducing", "OK");
+            } catch (e) {
+                socket.emit("edit-introducing", e);
+            }
         });
 
         socket.on("disconnect", () => {
