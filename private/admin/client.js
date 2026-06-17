@@ -178,14 +178,19 @@ socket.on("login", (token) => {
                 const img = imgs[n];
                 const imgData = $(img);
                 const src = imgData.attr("src");
-                if (!src.startsWith("/feed-data/")) {
+                if (!src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
                     imgData.attr("id", `image-${n}`);
                     socket.emit("add-image-to-feed-data", token, n, src);
                     imagesInChange[n] = n;
                 }
             }
 
+            const uploadDeadline = Date.now() + 30000;
             while (Object.values(imagesInChange).length !== 0) {
+                if (Date.now() > uploadDeadline) {
+                    console.warn("Image upload timed out; some images may not have been saved.");
+                    break;
+                }
                 await delay(100);
             }
 
@@ -259,7 +264,8 @@ socket.on("login", (token) => {
         const editorForm = $("<form id='editor-form'>");
         lastBr.before(editorForm);
 
-        const titleInput = $(`<h1><label for="title-input">Titre : </label><input style="width: calc(100% - 15px)" type="text" id="title-input" value="${data.title}" required></h1>`);
+        const titleInput = $(`<h1><label for="title-input">Titre : </label><input style="width: calc(100% - 15px)" type="text" id="title-input" required></h1>`);
+        titleInput.find("#title-input").val(data.title);
         editorForm.append(titleInput);
 
         const textInput = $("<div id='editor'></div><br>");
@@ -297,14 +303,19 @@ socket.on("login", (token) => {
                 const img = imgs[n];
                 const imgData = $(img);
                 const src = imgData.attr("src");
-                if (!src.startsWith("/feed-data/")) {
+                if (!src.startsWith("/feed-data/") && !src.startsWith("http://") && !src.startsWith("https://")) {
                     imgData.attr("id", `image-${n}`);
                     socket.emit("add-image-to-feed-data", token, n, src);
                     imagesInChange[n] = n;
                 }
             }
 
+            const uploadDeadline = Date.now() + 30000;
             while (Object.values(imagesInChange).length !== 0) {
+                if (Date.now() > uploadDeadline) {
+                    console.warn("Image upload timed out; some images may not have been saved.");
+                    break;
+                }
                 await delay(100);
             }
 

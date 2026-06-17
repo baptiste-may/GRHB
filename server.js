@@ -14,6 +14,19 @@ const io = new Server({
 // Importing fs
 const fs = require("fs");
 
+// Importing sanitize-html to prevent stored XSS
+const sanitizeHtml = require("sanitize-html");
+const sanitizeOptions = {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "h3", "img", "s"]),
+    allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        "a": ["href", "name", "target", "rel"],
+        "img": ["src", "alt", "width", "height"],
+        "*": ["class"]
+    },
+    allowedSchemes: ["http", "https", "/feed-data"]
+};
+
 // Importing nodemailer
 const nodemailer = require("nodemailer");
 const bp = require("body-parser");
@@ -78,7 +91,8 @@ function getIntroducingContent() {
  * @param {string} content
  */
 function saveIntroducingContent(title, content) {
-    fs.writeFileSync(introducingContentPath, JSON.stringify({ title, content }, null, 4), "utf8");
+    const sanitizedContent = sanitizeHtml(content, sanitizeOptions);
+    fs.writeFileSync(introducingContentPath, JSON.stringify({ title, content: sanitizedContent }, null, 4), "utf8");
     console.log("Introducing page content updated!");
 }
 
