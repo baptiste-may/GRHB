@@ -14,6 +14,19 @@ const io = new Server({
 // Importing fs
 const fs = require("fs");
 
+// Importing sanitize-html to prevent stored XSS
+const sanitizeHtml = require("sanitize-html");
+const sanitizeOptions = {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "h3", "img", "s"]),
+    allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        "a": ["href", "name", "target", "rel"],
+        "img": ["src", "alt", "width", "height"],
+        "*": ["class"]
+    },
+    allowedSchemes: ["http", "https", "/feed-data"]
+};
+
 // Importing nodemailer
 const nodemailer = require("nodemailer");
 const bp = require("body-parser");
@@ -57,6 +70,31 @@ const feedManager = new FeedManager(
         publications: {}
     }
 );
+
+// Path to the introducing page content file
+const introducingContentPath = "./public/introducing/content.json";
+
+/**
+ * Get the introducing page content
+ * @returns {{ title: string, content: string }}
+ */
+function getIntroducingContent() {
+    if (!fs.existsSync(introducingContentPath)) {
+        return { title: "Présentation", content: "" };
+    }
+    return JSON.parse(fs.readFileSync(introducingContentPath, "utf8"));
+}
+
+/**
+ * Save the introducing page content
+ * @param {string} title
+ * @param {string} content
+ */
+function saveIntroducingContent(title, content) {
+    const sanitizedContent = sanitizeHtml(content, sanitizeOptions);
+    fs.writeFileSync(introducingContentPath, JSON.stringify({ title, content: sanitizedContent }, null, 4), "utf8");
+    console.log("Introducing page content updated!");
+}
 
 // Creating subpages
 app.get("/newsletters/*", (req, res) => {
@@ -222,6 +260,27 @@ io.on("connection", (socket) => {
             dataURLtoFile(url, (filename) => {
                 socket.emit("add-image-to-feed-data", imageToken, filename);
             });
+        });
+
+        // Get introducing page content
+        socket.on("get-introducing", (askedToken) => {
+            if (askedToken !== token) return;
+            try {
+                socket.emit("get-introducing", "OK", getIntroducingContent());
+            } catch (e) {
+                socket.emit("get-introducing", e);
+            }
+        });
+
+        // Edit introducing page content
+        socket.on("edit-introducing", (askedToken, title, content) => {
+            if (askedToken !== token) return;
+            try {
+                saveIntroducingContent(title, content);
+                socket.emit("edit-introducing", "OK");
+            } catch (e) {
+                socket.emit("edit-introducing", e);
+            }
         });
 
         socket.on("disconnect", () => {
